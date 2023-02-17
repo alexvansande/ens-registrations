@@ -85,7 +85,7 @@ export default function Home({ lastUpdated, apps, campaigns }: PageProps) {
                 standard
               </a>
               . If you&apos;re a developer, you can{' '}
-              <a href="https://discuss.ens.domains/t/ensip-on-chain-source-parameter/16270">
+              <a href="https://github.com/ensdomains/docs/pull/127/files">
                 read the spec here
               </a>
               . The standard is a draft and welcomes feedback from developers!
