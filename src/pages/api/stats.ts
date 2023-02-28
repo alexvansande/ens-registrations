@@ -13,8 +13,7 @@ export async function getStats(offset: number): Promise<Result[]> {
 -- Define a CTE called 'mapped_sources' that extracts the first 8 characters of the secret value and the function name from the 'user14.transaction' table
 WITH mapped_sources AS (
   SELECT 
-    SUBSTR(t.function.params[4].value, ${
-      offset + 3
+    SUBSTR(t.function.params[4].value, ${offset + 3
     }, 8) AS source_substr, -- Extract the first 8 characters of the secret value
     t.function.name -- Extract the function name
   FROM user14.transaction t
@@ -31,21 +30,23 @@ FROM (
     source_substr
   FROM mapped_sources
   GROUP BY source_substr
-  HAVING COUNT(*) <= 1
+  HAVING COUNT(*) <= 10 -- Consider any count below 10 to be accidental reuse of secret
 ) subquery
 -- Concatenate the results with the counts of non-unique 'source_substr' values, which are optionally mapped to new names
 UNION ALL
 SELECT 
   CASE source_substr
-  WHEN '00000000' THEN 'Null address' -- If the 'source_substr' is '00000', map it to 'Null'
   WHEN '03acfad5' THEN 'ensfairy.eth' -- If the 'source_substr' is '03acfa', map it to 'ensfairy.eth'
+  WHEN '00000000' THEN 'No Secret used' -- Users who used 0 as a secret
+  WHEN '02224567' THEN 'gpt-emoji.eth' -- Some dude that registered a bunch of gpt-(emoji).eth names for some reason
+  WHEN '89abcdef' THEN 'gpt-emoji.eth' 
   -- Add more mappings here as needed
     ELSE source_substr -- If the 'source_substr' is not mapped, use the original value
   END AS source,
   COUNT(*) AS "count"
 FROM mapped_sources
 GROUP BY source
-HAVING COUNT(*) > 1
+HAVING COUNT(*) > 10 -- Consider any count below 10 to be accidental reuse of secret
 ORDER BY "count" DESC
 `
 
